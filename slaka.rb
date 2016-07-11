@@ -6,11 +6,16 @@ require 'optparse'
 # Cslaka stands for "class slaka"
 class Cslaka
 
+    attr_accessor :vars
+
     # all of the operators (consonants)
     # TODO (duh)
     @@ops = {
         'p' => -> slaka, args {
-            puts 'Hello, World!'
+            print slaka.vars[args[0]]
+        },
+        'pʰ' => -> slaka, args {
+            slaka.vars[args[0]] = gets || ''
         }
     }
 
@@ -21,7 +26,8 @@ class Cslaka
     @@arg_pairs = *[*0..8].combination(2)
 
     def initialize
-        # nothing here yet
+        # initialize all variables to empty string
+        @vars = Array.new(9) { '' }
     end
 
     # executes slaka code from a string
@@ -71,7 +77,8 @@ if __FILE__ == $0
         end
 
         opts.on '-e', '--exec CODE', 'execute code given as an argument' do |code|
-            skala.run code
+            slaka.run code
+            exit
         end
 
         opts.on '-i', '--interactive', 'start a REPL environment' do
