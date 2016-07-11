@@ -2,6 +2,8 @@
 
 require 'optparse'
 
+require_relative 'func.rb'
+
 # the name of the language must be lowercase, but Ruby does not like that :(
 # Cslaka stands for "class slaka"
 class Cslaka
@@ -9,15 +11,28 @@ class Cslaka
     attr_accessor :vars
 
     # all of the operators (consonants)
-    # TODO (duh)
-    @@ops = {
-        'p' => -> slaka, args {
-            print slaka.vars[args[0]]
-        },
-        'pʰ' => -> slaka, args {
-            slaka.vars[args[0]] = gets || ''
+    @@ops = [
+        ['c', 'ɟ', :concat],
+        ['s', 'z', :add],       # mnemonic: sum
+        ['t', 'd', :subtract],  # mnemonic: difference
+        ['p', 'b', :multiply],  # mnemonic: product
+        ['q', 'ɢ', :divide]     # mnemonic: quotient
+    ].map{|unvoiced, voiced, func|
+        # I am sorry for the following lines of code
+        {
+            unvoiced       => -> slaka, args { slaka.vars[args[0]] = Func.send func, slaka.vars[args[0]], slaka.vars[args[1]] },
+            unvoiced + 'ʰ' => -> slaka, args { slaka.vars[args[1]] = Func.send func, slaka.vars[args[0]], slaka.vars[args[1]] },
+            voiced         => -> slaka, args { slaka.vars[args[0]] = Func.send func, slaka.vars[args[1]], slaka.vars[args[0]] },
+            voiced + 'ʰ'   => -> slaka, args { slaka.vars[args[1]] = Func.send func, slaka.vars[args[1]], slaka.vars[args[0]] }
         }
-    }
+    }.reduce({
+        'ʔ' => -> slaka, args {
+            slaka.vars[args[0]] = gets || ''
+        },
+        'ʔʰ' => -> slaka, args {
+            print slaka.vars[args[0]]
+        }
+    }, :merge)
 
     # a list of the argument pairs (vowels) in order
     @@vowels = ['i', 'y', 'ɨ', 'ʉ', 'ɯ', 'u', 'ɪ', 'ʏ', 'ɪ̈', 'ʊ̈', 'ɯ̽', 'ʊ',
